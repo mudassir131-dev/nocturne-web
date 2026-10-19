@@ -1,0 +1,839 @@
+@import './tokens.css';
+
+*, *::before, *::after {
+  box-sizing: border-box;
+  margin: 0;
+  padding: 0;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-touch-callout: none;
+}
+
+html, body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+  font-family: -apple-system, BlinkMacSystemFont, "SF Pro Display", "SF Pro Text", "SF Pro", "Inter", "Plus Jakarta Sans", system-ui, -apple-system, sans-serif;
+  -webkit-font-smoothing: antialiased;
+  -moz-osx-font-smoothing: grayscale;
+  text-rendering: optimizeLegibility;
+  letter-spacing: -0.015em;
+  font-feature-settings: "cv02", "cv03", "cv04", "cv11", "ss01";
+  overflow-x: hidden;
+  height: 100%;
+  width: 100%;
+  -webkit-tap-highlight-color: transparent !important;
+}
+
+#root {
+  min-height: 100vh;
+  display: flex;
+  flex-direction: column;
+}
+
+/* Custom modern scrollbars on desktop */
+::-webkit-scrollbar {
+  width: 8px;
+  height: 8px;
+}
+
+::-webkit-scrollbar-track {
+  background: transparent;
+}
+
+::-webkit-scrollbar-thumb {
+  background: rgba(255, 255, 255, 0.18);
+  border-radius: var(--radius-full);
+}
+
+::-webkit-scrollbar-thumb:hover {
+  background: rgba(255, 255, 255, 0.32);
+}
+
+/* Mobile: ZERO scrollbar bars against phone bezels - 100% full bleed touch experience */
+@media (max-width: 900px) {
+  ::-webkit-scrollbar {
+    display: none !important;
+    width: 0 !important;
+    height: 0 !important;
+  }
+  html, body, #root, .app-shell, .main-layout, .content-scrollable, * {
+    scrollbar-width: none !important;
+    -ms-overflow-style: none !important;
+  }
+}
+
+/* Layout App Shell */
+.app-shell {
+  display: flex;
+  height: 100vh;
+  width: 100vw;
+  overflow: hidden;
+  position: relative;
+  background: transparent;
+  z-index: 1;
+}
+
+.main-layout {
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  height: 100%;
+  overflow: hidden;
+  position: relative;
+  background: transparent;
+  z-index: 2;
+}
+
+.content-scrollable {
+  flex: 1;
+  overflow-y: auto;
+  overflow-x: hidden;
+  padding-bottom: calc(var(--mini-player-height) + 36px);
+  scroll-behavior: smooth;
+  -webkit-overflow-scrolling: touch;
+  overscroll-behavior-y: contain;
+  will-change: scroll-position;
+  transform: translateZ(0);
+}
+
+@media (max-width: 900px) {
+  .content-scrollable {
+    padding-bottom: calc(var(--mini-player-height) + var(--mobile-nav-height) + 32px + env(safe-area-inset-bottom, 0px));
+  }
+}
+
+/* Buttons and Links reset - Zero tap highlight box and zero blue outline */
+button {
+  background: none;
+  border: none;
+  font-family: inherit;
+  color: inherit;
+  cursor: pointer;
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  transition: var(--transition-fast);
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  -webkit-focus-ring-color: transparent !important;
+  user-select: none;
+}
+
+button:focus,
+button:focus-visible,
+button:active,
+a:focus,
+a:focus-visible,
+a:active,
+input:focus,
+input:focus-visible {
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  box-shadow: none;
+}
+
+button:disabled {
+  opacity: 0.4;
+  cursor: not-allowed;
+}
+
+a {
+  color: inherit;
+  text-decoration: none;
+  -webkit-tap-highlight-color: transparent !important;
+  outline: none !important;
+}
+
+/* Typography */
+.page-title {
+  font-size: 34px;
+  font-weight: 700;
+  letter-spacing: -0.02em;
+  color: var(--text-primary);
+  margin-bottom: 24px;
+}
+
+.section-header {
+  display: flex;
+  align-items: baseline;
+  justify-content: space-between;
+  margin-top: 36px;
+  margin-bottom: 16px;
+}
+
+.section-title {
+  font-size: 22px;
+  font-weight: 700;
+  letter-spacing: -0.015em;
+  color: var(--text-primary);
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.section-subtitle {
+  font-size: 13px;
+  color: var(--text-secondary);
+  font-weight: 500;
+}
+
+.see-all-link {
+  font-size: 13px;
+  font-weight: 600;
+  color: var(--accent-red);
+  display: inline-flex;
+  align-items: center;
+  gap: 4px;
+}
+
+.see-all-link:hover {
+  text-decoration: underline;
+}
+
+/* Red/Accent Play Button */
+.btn-play-red {
+  background-color: var(--accent-red);
+  color: var(--accent-contrast, #000000);
+  padding: 10px 24px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.25);
+  transition: transform var(--transition-fast), background-color var(--transition-fast);
+}
+
+.btn-play-red:hover {
+  background-color: var(--accent-red-hover);
+  transform: scale(1.02);
+}
+
+.btn-secondary {
+  background-color: rgba(255, 255, 255, 0.1);
+  color: #ffffff;
+  padding: 10px 20px;
+  border-radius: var(--radius-full);
+  font-size: 14px;
+  font-weight: 600;
+  display: inline-flex;
+  align-items: center;
+  gap: 8px;
+  backdrop-filter: blur(10px);
+  transition: background-color var(--transition-fast), transform var(--transition-fast);
+}
+
+.btn-secondary:hover {
+  background-color: rgba(255, 255, 255, 0.18);
+  transform: scale(1.02);
+}
+
+/* Explicit badge */
+.badge-explicit {
+  display: inline-block;
+  font-size: 9px;
+  font-weight: 700;
+  line-height: 1;
+  padding: 2px 3px;
+  border-radius: 2px;
+  background-color: rgba(255, 255, 255, 0.2);
+  color: var(--text-secondary);
+  text-transform: uppercase;
+  margin-left: 6px;
+  vertical-align: middle;
+}
+
+/* Grid Layouts */
+.grid-cards {
+  display: grid;
+  grid-template-columns: repeat(auto-fill, minmax(180px, 1fr));
+  gap: 24px 20px;
+}
+
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 26px;
+    margin-bottom: 16px;
+  }
+  .section-header {
+    margin-top: 24px;
+    margin-bottom: 12px;
+  }
+  .section-title {
+    font-size: 19px;
+  }
+}
+
+@media (max-width: 640px) {
+  .grid-cards {
+    grid-template-columns: repeat(2, 1fr);
+    gap: 14px 10px;
+  }
+}
+
+/* ========================================================
+   LIGHT MODE LIQUID GLASS SYSTEM OVERRIDES
+   ======================================================== */
+[data-theme="light"] {
+  color: var(--text-primary);
+}
+
+[data-theme="light"] body {
+  background-color: var(--bg-primary);
+  color: var(--text-primary);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb {
+  background: rgba(0, 0, 0, 0.18);
+}
+
+[data-theme="light"] ::-webkit-scrollbar-thumb:hover {
+  background: rgba(0, 0, 0, 0.32);
+}
+
+[data-theme="light"] .main-layout h1,
+[data-theme="light"] .main-layout h2,
+[data-theme="light"] .main-layout h3,
+[data-theme="light"] .main-layout h4,
+[data-theme="light"] .main-layout .page-title,
+[data-theme="light"] .main-layout .section-title,
+[data-theme="light"] .main-layout .shelf-title,
+[data-theme="light"] .main-layout .header-nav-heading,
+[data-theme="light"] .main-layout .card-title,
+[data-theme="light"] .apple-sidebar .nocturne-brand-title {
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .card-subtitle,
+[data-theme="light"] .section-subtitle,
+[data-theme="light"] .shelf-title-chevron {
+  color: #6e6e73 !important;
+}
+
+[data-theme="light"] .btn-secondary {
+  background-color: rgba(0, 0, 0, 0.06);
+  color: #1c1c1e;
+  border: 1px solid rgba(0, 0, 0, 0.08);
+}
+
+[data-theme="light"] .btn-secondary:hover {
+  background-color: rgba(0, 0, 0, 0.10);
+}
+
+[data-theme="light"] .badge-explicit {
+  background-color: rgba(0, 0, 0, 0.08);
+  color: rgba(0, 0, 0, 0.65);
+}
+
+[data-theme="light"] .sidebar-search-btn {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  color: #1c1c1e !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .sidebar-search-btn .search-placeholder {
+  color: #8e8e93 !important;
+}
+
+[data-theme="light"] .sidebar-search-btn .search-icon {
+  color: #8e8e93 !important;
+}
+
+[data-theme="light"] .nav-item {
+  color: #3a3a3c !important;
+}
+
+[data-theme="light"] .nav-item:hover {
+  background-color: rgba(0, 0, 0, 0.06) !important;
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .nav-item.active {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .apple-floating-pill-player {
+  background: rgba(255, 255, 255, 0.88) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.12), inset 0 1px 1px 0 rgba(255, 255, 255, 1) !important;
+}
+
+[data-theme="light"] .apple-floating-pill-player .transport-btn,
+[data-theme="light"] .apple-floating-pill-player .aux-icon-btn,
+[data-theme="light"] .apple-floating-pill-player .transport-play-btn {
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .apple-floating-pill-player .transport-btn.active-accent {
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .apple-floating-pill-player .track-title-text {
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .apple-floating-pill-player .track-subtitle-text {
+  color: #6e6e73 !important;
+}
+
+[data-theme="light"] .apple-floating-pill-player .player-progress-rail {
+  background-color: rgba(0, 0, 0, 0.12) !important;
+}
+
+[data-theme="light"] .apple-floating-pill-player .progress-played-bar {
+  background-color: #1c1c1e !important;
+}
+
+[data-theme="light"] .apple-floating-pill-player .progress-pill-thumb {
+  background-color: #1c1c1e !important;
+  box-shadow: 0 0 4px rgba(0, 0, 0, 0.3) !important;
+}
+
+/* Light Mode Search & Cards */
+[data-theme="light"] .search-red-capsule {
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1.5px solid rgba(0, 0, 0, 0.16) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .search-red-capsule:focus-within {
+  border-color: #8e8e93 !important;
+  box-shadow: 0 0 0 3px rgba(0, 0, 0, 0.08), 0 4px 20px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .search-spinner {
+  color: #8e8e93 !important;
+}
+
+[data-theme="light"] .capsule-search-input {
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .capsule-search-input::placeholder {
+  color: #8e8e93 !important;
+}
+
+[data-theme="light"] .capsule-search-icon,
+[data-theme="light"] .capsule-clear-btn {
+  color: #8e8e93 !important;
+}
+
+[data-theme="light"] .search-capsule-item {
+  background: rgba(0, 0, 0, 0.05) !important;
+  color: #1c1c1e !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04) !important;
+}
+
+[data-theme="light"] .search-capsule-item:hover {
+  background: rgba(0, 0, 0, 0.09) !important;
+  color: #000000 !important;
+}
+
+[data-theme="light"] .search-capsule-item.active {
+  background: #1c1c1e !important;
+  color: #ffffff !important;
+  border-color: #1c1c1e !important;
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.2) !important;
+}
+
+[data-theme="light"] .top-result-lockup-card {
+  background: rgba(255, 255, 255, 0.72) !important;
+  border-color: rgba(0, 0, 0, 0.08) !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .top-result-lockup-card:hover {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(0, 0, 0, 0.14) !important;
+}
+
+[data-theme="light"] .lockup-title-line {
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .lockup-subtitle-line {
+  color: #6e6e73 !important;
+}
+
+[data-theme="light"] .search-autocomplete-popover {
+  background: rgba(255, 255, 255, 0.95) !important;
+  border-color: rgba(0, 0, 0, 0.1) !important;
+  box-shadow: 0 16px 40px rgba(0, 0, 0, 0.14) !important;
+}
+
+[data-theme="light"] .popover-query-text {
+  color: #3a3a3c !important;
+}
+
+[data-theme="light"] .query-prefix {
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .popover-search-icon {
+  color: #8e8e93 !important;
+}
+
+[data-theme="light"] .popover-song-title {
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .popover-song-subtitle {
+  color: #6e6e73 !important;
+}
+
+[data-theme="light"] .popover-song-row:hover,
+[data-theme="light"] .popover-text-row:hover {
+  background-color: rgba(0, 0, 0, 0.04) !important;
+}
+
+
+[data-theme="light"] .artist-card-name {
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .artist-name-label {
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .artist-card-subs {
+  color: #6e6e73 !important;
+}
+
+/* TrackLockupShelf, Song Rows & Lists in Light Mode */
+[data-theme="light"] .lockup-title-text,
+[data-theme="light"] .song-title,
+[data-theme="light"] .track-name,
+[data-theme="light"] .shelf-title {
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .lockup-artists-text,
+[data-theme="light"] .song-artist,
+[data-theme="light"] .track-artist,
+[data-theme="light"] .shelf-title-chevron {
+  color: #55555c !important;
+}
+
+[data-theme="light"] .track-lockup-row {
+  border-bottom-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .track-lockup-row:hover {
+  background-color: rgba(0, 0, 0, 0.05) !important;
+}
+
+[data-theme="light"] .track-lockup-row.active {
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .track-lockup-row.active .lockup-title-text {
+  color: #1c1c1e !important;
+}
+
+[data-theme="light"] .lockup-ellipsis-btn {
+  color: rgba(0, 0, 0, 0.45) !important;
+}
+
+[data-theme="light"] .track-lockup-row:hover .lockup-ellipsis-btn,
+[data-theme="light"] .lockup-ellipsis-btn:hover {
+  color: #1c1c1e !important;
+  background-color: rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .shelf-floating-nav {
+  background-color: rgba(255, 255, 255, 0.94) !important;
+  border-color: rgba(0, 0, 0, 0.14) !important;
+  color: #1c1c1e !important;
+  box-shadow: 0 4px 16px rgba(0, 0, 0, 0.15) !important;
+}
+
+[data-theme="light"] .shelf-floating-nav:hover {
+  background-color: #ffffff !important;
+  border-color: rgba(0, 0, 0, 0.28) !important;
+  color: #000000 !important;
+}
+
+/* Explicitly Protect Full Player (apple-split-player-locked) with pure white & fluid text */
+.apple-split-player-locked,
+.apple-split-player-locked * {
+  --text-primary: #ffffff !important;
+}
+
+.apple-split-player-locked h1,
+.apple-split-player-locked h2,
+.apple-split-player-locked .song-title-locked {
+  color: #ffffff !important;
+}
+
+.apple-split-player-locked .song-artist-locked {
+  color: rgba(255, 255, 255, 0.72) !important;
+}
+
+.apple-split-player-locked .time-label {
+  color: rgba(255, 255, 255, 0.58) !important;
+}
+
+.apple-split-player-locked .transport-row-locked button,
+.apple-split-player-locked .apple-music-skip-btn,
+.apple-split-player-locked .apple-music-playpause-btn,
+.apple-split-player-locked .shuffle-box-btn,
+.apple-split-player-locked .repeat-box-btn,
+.apple-split-player-locked .star-round-btn,
+.apple-split-player-locked .more-round-btn,
+.apple-split-player-locked .apple-close-btn {
+  color: #ffffff !important;
+}
+
+.apple-split-player-locked .lyrics-scrollable-container,
+.apple-split-player-locked .lyrics-header-title,
+.apple-split-player-locked .lyrics-title {
+  color: #ffffff !important;
+}
+
+.apple-split-player-locked .lyrics-line {
+  color: rgba(255, 255, 255, 0.35) !important;
+}
+
+.apple-split-player-locked .lyrics-line.is-active {
+  color: #ffffff !important;
+}
+
+.apple-split-player-locked .volume-icon-btn,
+.apple-split-player-locked .airplay-btn {
+  color: rgba(255, 255, 255, 0.65) !important;
+}
+
+/* ========================================================
+   GLOBAL UI POLISH & PAGE TRANSITIONS
+   ======================================================== */
+.page-transition-wrapper {
+  animation: applePageEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) forwards;
+  will-change: opacity, transform;
+}
+
+@keyframes applePageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(8px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+/* Card Artwork subtle zoom polish */
+.card-artwork-img {
+  transition: transform 0.35s cubic-bezier(0.16, 1, 0.3, 1) !important;
+}
+
+.apple-content-card:hover .card-artwork-img {
+  transform: scale(1.035);
+}
+
+/* Tactile micro-press feedback on buttons */
+button:active:not(:disabled) {
+  transform: scale(0.97);
+}
+
+/* Fluid text highlight selection */
+::selection {
+  background-color: var(--accent-red-dim);
+  color: var(--text-primary);
+}
+
+/* Responsive typography polish */
+@media (max-width: 768px) {
+  .page-title {
+    font-size: 28px;
+    margin-bottom: 18px;
+  }
+  .section-title {
+    font-size: 19px;
+  }
+}
+
+/* ========================================================
+   Seamless Edge-to-Edge Layout: Zero Side Borders Policy
+   Removes any lateral/side borders, card perimeter lines,
+   or desktop/mobile container dividers.
+======================================================== */
+.app-shell,
+.main-layout,
+.content-scrollable,
+.page-transition-wrapper,
+.apple-sidebar,
+.apple-home-page,
+.apple-new-page,
+.apple-carousel-shelf,
+.shelf-relative-container,
+.shelf-cards-row {
+  border-left: none !important;
+  border-right: none !important;
+  outline: none !important;
+}
+
+/* Card Artwork Wrapper - Zero borders in light and dark modes */
+.card-artwork-wrapper,
+.editorial-artwork-container,
+.album-card-artwork-box,
+.iconic-card-artwork,
+.neon-card-artwork {
+  border: none !important;
+  border-left: none !important;
+  border-right: none !important;
+  border-top: none !important;
+  border-bottom: none !important;
+  outline: none !important;
+  background-color: transparent !important;
+}
+
+.card-artwork-img,
+.album-card-art-img,
+.editorial-banner-img {
+  border: none !important;
+  outline: none !important;
+}
+
+/* Clean subtle natural shadow for light mode instead of harsh black rings */
+[data-theme="light"] .card-artwork-wrapper,
+[data-theme="light"] .album-card-artwork-box {
+  box-shadow: 0 4px 14px rgba(0, 0, 0, 0.08) !important;
+}
+
+[data-theme="light"] .apple-content-card:hover .card-artwork-wrapper,
+[data-theme="light"] .album-card-item:hover .album-card-artwork-box {
+  box-shadow: 0 8px 22px rgba(0, 0, 0, 0.14) !important;
+}
+
+/* ========================================================
+   Apple Music Sticky Top Navigation Bar (Back / Forward)
+======================================================== */
+.apple-global-top-bar {
+  height: 48px;
+  display: flex;
+  align-items: center;
+  justify-content: space-between;
+  padding: 8px 36px 0;
+  background: transparent;
+  z-index: 50;
+  user-select: none;
+  pointer-events: auto;
+  flex-shrink: 0;
+}
+
+.apple-nav-controls {
+  display: flex;
+  align-items: center;
+  gap: 8px;
+}
+
+.apple-nav-chevron-btn {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  gap: 4px;
+  height: 34px;
+  padding: 0 13px 0 7px;
+  border-radius: 9999px;
+  background: rgba(255, 255, 255, 0.08);
+  backdrop-filter: blur(24px);
+  -webkit-backdrop-filter: blur(24px);
+  color: var(--text-primary);
+  font-size: 13.5px;
+  font-weight: 600;
+  cursor: pointer;
+  border: none;
+  outline: none !important;
+  -webkit-tap-highlight-color: transparent !important;
+  transition: all 0.2s cubic-bezier(0.16, 1, 0.3, 1);
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.12);
+}
+
+[data-theme="light"] .apple-nav-chevron-btn {
+  background: rgba(0, 0, 0, 0.06);
+  color: #1c1c1e;
+  box-shadow: 0 2px 8px rgba(0, 0, 0, 0.04);
+}
+
+.apple-nav-chevron-btn:hover:not(:disabled) {
+  background: rgba(255, 255, 255, 0.16);
+  transform: scale(1.04);
+}
+
+[data-theme="light"] .apple-nav-chevron-btn:hover:not(:disabled) {
+  background: rgba(0, 0, 0, 0.10);
+}
+
+.apple-nav-chevron-btn:active:not(:disabled) {
+  transform: scale(0.96);
+}
+
+.apple-nav-chevron-btn.disabled {
+  opacity: 0.22;
+  cursor: default;
+  pointer-events: none;
+  box-shadow: none;
+}
+
+.apple-nav-chevron-btn.forward-btn {
+  padding: 0;
+  width: 34px;
+}
+
+.apple-nav-back-text {
+  letter-spacing: -0.015em;
+  line-height: 1;
+}
+
+@media (max-width: 768px) {
+  .apple-global-top-bar {
+    height: 42px;
+    padding: 6px 14px 0;
+  }
+  .apple-nav-chevron-btn.forward-btn {
+    display: none;
+  }
+}
+
+.apple-top-right-actions {
+  display: flex;
+  align-items: center;
+  gap: 10px;
+}
+
+/* ========================================================
+   High-Performance 60/120fps Smooth Animations
+======================================================== */
+.page-transition-wrapper {
+  animation: applePageEnter 0.28s cubic-bezier(0.16, 1, 0.3, 1) both;
+  will-change: opacity, transform;
+  transform: translate3d(0, 0, 0);
+  backface-visibility: hidden;
+}
+
+@keyframes applePageEnter {
+  from {
+    opacity: 0;
+    transform: translateY(6px);
+  }
+  to {
+    opacity: 1;
+    transform: translateY(0);
+  }
+}
+
+.apple-floating-pill-player,
+.shelf-cards-row,
+.content-scrollable {
+  -webkit-overflow-scrolling: touch;
+  transform: translateZ(0);
+  backface-visibility: hidden;
+}
+
+
+
+
+

@@ -1,0 +1,97 @@
+:root {
+  /* Default Dark Mode: Deep Dark Liquid Glass */
+  --bg-primary: #0a0b0f;
+  --bg-secondary: rgba(18, 20, 28, 0.65);
+  --bg-surface: rgba(24, 26, 36, 0.55);
+  --bg-card: rgba(30, 32, 44, 0.45);
+  --bg-hover: rgba(255, 255, 255, 0.08);
+  --bg-active: rgba(255, 255, 255, 0.14);
+
+  --accent-red: #ffffff;
+  --accent-red-hover: #e5e5e7;
+  --accent-red-dim: rgba(255, 255, 255, 0.16);
+  --accent-contrast: #000000;
+
+  --text-primary: #ffffff;
+  --text-secondary: #98989d;
+  --text-tertiary: #636366;
+  --text-inverse: #000000;
+
+  --border-subtle: rgba(255, 255, 255, 0.08);
+  --border-hover: rgba(255, 255, 255, 0.18);
+  --border-active: rgba(255, 255, 255, 0.32);
+
+  /* Liquid Glass System for Dark Mode */
+  --glass-bg: rgba(16, 18, 26, 0.55);
+  --glass-bg-elevated: rgba(24, 26, 38, 0.72);
+  --glass-blur: blur(48px) saturate(200%);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.12);
+  --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 0.18);
+  --glass-shadow: 0 16px 40px rgba(0, 0, 0, 0.65);
+
+  --player-bg: rgba(22, 24, 32, 0.90);
+  --player-border: rgba(255, 255, 255, 0.14);
+
+  --sidebar-bg: rgba(14, 15, 22, 0.55);
+  --sidebar-border: rgba(255, 255, 255, 0.08);
+  --sidebar-text: #ffffff;
+  --sidebar-text-muted: rgba(255, 255, 255, 0.65);
+
+  /* Layout */
+  --sidebar-width: 250px;
+  --mini-player-height: 72px;
+  --mobile-nav-height: 60px;
+
+  /* Radii */
+  --radius-xs: 4px;
+  --radius-sm: 6px;
+  --radius-md: 8px;
+  --radius-lg: 12px;
+  --radius-xl: 16px;
+  --radius-full: 9999px;
+
+  /* Transitions */
+  --transition-fast: 0.15s cubic-bezier(0.2, 0, 0, 1);
+  --transition-normal: 0.25s cubic-bezier(0.2, 0, 0, 1);
+  --transition-smooth: 0.35s cubic-bezier(0.16, 1, 0.3, 1);
+}
+
+[data-theme="light"] {
+  /* Light Mode: Pristine Liquid Glass */
+  --bg-primary: #f5f6fa;
+  --bg-secondary: rgba(255, 255, 255, 0.75);
+  --bg-surface: rgba(255, 255, 255, 0.65);
+  --bg-card: rgba(255, 255, 255, 0.75);
+  --bg-hover: rgba(0, 0, 0, 0.05);
+  --bg-active: rgba(0, 0, 0, 0.09);
+
+  --accent-red: #6e6e73;
+  --accent-red-hover: #1c1c1e;
+  --accent-red-dim: rgba(0, 0, 0, 0.08);
+  --accent-contrast: #ffffff;
+
+  --text-primary: #1c1c1e;
+  --text-secondary: #6e6e73;
+  --text-tertiary: #8e8e93;
+  --text-inverse: #ffffff;
+
+  --border-subtle: rgba(0, 0, 0, 0.08);
+  --border-hover: rgba(0, 0, 0, 0.16);
+  --border-active: rgba(0, 0, 0, 0.28);
+
+  /* Liquid Glass System for Light Mode */
+  --glass-bg: rgba(255, 255, 255, 0.68);
+  --glass-bg-elevated: rgba(255, 255, 255, 0.88);
+  --glass-blur: blur(48px) saturate(200%);
+  --glass-border: 1px solid rgba(255, 255, 255, 0.85);
+  --glass-specular: inset 0 1px 1px 0 rgba(255, 255, 255, 1);
+  --glass-shadow: 0 12px 32px rgba(0, 0, 0, 0.06);
+
+  --player-bg: rgba(255, 255, 255, 0.90);
+  --player-border: rgba(0, 0, 0, 0.12);
+
+  --sidebar-bg: rgba(246, 247, 251, 0.75);
+  --sidebar-border: rgba(0, 0, 0, 0.08);
+  --sidebar-text: #1c1c1e;
+  --sidebar-text-muted: rgba(0, 0, 0, 0.6);
+}

@@ -92,8 +92,12 @@ export const ThemeProvider: React.FC<{ children: React.ReactNode }> = ({ childre
     }
   };
 
+  const handleSetAdaptiveColor = (color?: string | null) => {
+    setAdaptiveColor(color || null);
+  };
+
   return (
-    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme, setAdaptiveColor }}>
+    <ThemeContext.Provider value={{ theme, toggleTheme, setTheme, setAdaptiveColor: handleSetAdaptiveColor }}>
       {children}
     </ThemeContext.Provider>
   );

@@ -52,7 +52,7 @@ export async function fetchFromLrcLib(query: LyricsSearchQuery): Promise<LyricsR
     });
 
     if (searchRes.ok) {
-      const results: any[] = await searchRes.json();
+      const results = (await searchRes.json()) as any[];
       if (Array.isArray(results) && results.length > 0) {
         // Pick best matching candidate (duration match prioritized)
         let best = results[0];

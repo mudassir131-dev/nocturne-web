@@ -42,7 +42,7 @@ interface ArtistData {
   } | null;
 }
 
-export const ArtistPage: React.FC<ArtistPageProps> = ({ artistName, onNavigate }) => {
+export const ArtistPage: React.FC<ArtistPageProps> = ({ artistName, onNavigate, onBack }) => {
   const { currentTrack, isPlaying, playTrack, togglePlay } = usePlayer();
   const [data, setData] = useState<ArtistData | null>(null);
   const [loading, setLoading] = useState<boolean>(true);

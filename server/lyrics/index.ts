@@ -12,7 +12,7 @@ const lyricsCache = new Map<string, { result: LyricsResult; timestamp: number }>
 const CACHE_TTL = 1000 * 60 * 60 * 24; // 24 hours
 
 export async function fetchMultiProviderLyrics(query: LyricsSearchQuery): Promise<LyricsResult> {
-  const { title, artist, duration, videoId } = query;
+  const { title, artist, videoId } = query;
   if (!title && !videoId) {
     return {
       found: false,

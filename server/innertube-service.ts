@@ -568,18 +568,18 @@ export async function fetchPlaylistTracks(
     let pid = playlistIdOrQuery;
 
     if (!playlistIdOrQuery.startsWith('PL') && !playlistIdOrQuery.startsWith('RD') && !playlistIdOrQuery.startsWith('OLAK')) {
-      const searchRes = await yt.search(playlistIdOrQuery, { type: 'playlist' });
-      const pl = searchRes.playlists?.[0];
+      const searchRes: any = await yt.search(playlistIdOrQuery, { type: 'playlist' });
+      const pl: any = searchRes.playlists?.[0];
       pid = pl?.content_id || pl?.id || pl?.endpoint?.payload?.playlistId || '';
     }
 
     if (!pid) return { title: playlistIdOrQuery, playlistId: '', tracks: [] };
 
-    const full = await yt.getPlaylist(pid);
+    const full: any = await yt.getPlaylist(pid);
     const title = full.info?.title || full.header?.title?.text || playlistIdOrQuery;
     const tracks: NormalizedTrack[] = [];
 
-    const videos = full.videos || [];
+    const videos: any[] = full.videos || [];
     for (const v of videos) {
       const vid = v.content_id || v.id;
       if (!vid) continue;

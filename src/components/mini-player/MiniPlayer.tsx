@@ -23,7 +23,7 @@ interface MiniPlayerProps {
   onNavigate?: (route: string, param?: string) => void;
 }
 
-export const MiniPlayer: React.FC<MiniPlayerProps> = ({ onNavigate }) => {
+export const MiniPlayer: React.FC<MiniPlayerProps> = ({ onNavigate: _onNavigate }) => {
   const {
     currentTrack,
     isPlaying,

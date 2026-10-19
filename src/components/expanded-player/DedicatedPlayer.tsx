@@ -40,7 +40,6 @@ const DEFAULT_FALLBACK_TRACK: Track = {
   artworkUrl: 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
   duration: 0,
   durationFormatted: '0:00',
-  streamId: '',
   source: 'innertube',
   streamAvailability: false
 };

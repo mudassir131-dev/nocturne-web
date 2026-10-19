@@ -21,7 +21,7 @@ export async function fetchFromPaxsenix(query: LyricsSearchQuery): Promise<Lyric
     });
 
     if (!searchRes.ok) return null;
-    const results: any[] = await searchRes.json();
+    const results = (await searchRes.json()) as any[];
     if (!Array.isArray(results) || results.length === 0 || !results[0].id) {
       return null;
     }

@@ -1,5 +1,5 @@
 import React, { useState, useEffect, useRef } from 'react';
-import { Search, X, Loader2, Play, Music, Mic2, MoreHorizontal, ChevronRight, Sparkles } from 'lucide-react';
+import { Search, X, Loader2, Play, Music, Mic2, MoreHorizontal, ChevronRight } from 'lucide-react';
 import type { Track } from '../types/music';
 import { TrackRow } from '../components/track-list/TrackRow';
 import { usePlayer } from '../context/PlayerContext';
@@ -135,7 +135,7 @@ interface SearchPageProps {
   onBack?: () => void;
 }
 
-export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNavigate, onBack }) => {
+export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNavigate, onBack: _onBack }) => {
   const [query, setQuery] = useState(initialQuery);
   const [results, setResults] = useState<Track[]>([]);
   const [catalog, setCatalog] = useState<{
@@ -151,7 +151,7 @@ export const SearchPage: React.FC<SearchPageProps> = ({ initialQuery = '', onNav
 
   // Similar songs & YouTube algorithm keywords state
   const [relatedKeywords, setRelatedKeywords] = useState<string[]>([]);
-  const [activeKeyword, setActiveKeyword] = useState<string | null>(null);
+  const [, setActiveKeyword] = useState<string | null>(null);
   const [isDeepLoading, setIsDeepLoading] = useState(false);
   const [hasLoadedDeep, setHasLoadedDeep] = useState(false);
 

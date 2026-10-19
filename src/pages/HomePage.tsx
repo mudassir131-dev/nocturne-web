@@ -62,9 +62,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       artworkUrl: albumItem.artworkUrl,
       duration: 210,
       durationFormatted: '3:30',
-      audioUrl: '',
-      streamId: '',
-      source: 'youtube'
+      source: 'innertube',
+      streamAvailability: false
     };
     playTrack(optimisticTrack);
 
@@ -123,9 +122,8 @@ export const HomePage: React.FC<HomePageProps> = ({ onNavigate }) => {
       artworkUrl: item.artworkUrl,
       duration: 210,
       durationFormatted: '3:30',
-      audioUrl: '',
-      streamId: '',
-      source: 'youtube'
+      source: 'innertube',
+      streamAvailability: false
     };
     playTrack(optimisticTrack);
 

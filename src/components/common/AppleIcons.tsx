@@ -43,7 +43,7 @@ export const ApplePauseIcon: React.FC<{ size?: number; className?: string }> = (
   </svg>
 );
 
-export const AppleShuffleIcon: React.FC<{ size?: number; className?: string }> = ({ size = 16, className }) => (
+export const AppleShuffleIcon: React.FC<{ size?: number; className?: string; active?: boolean }> = ({ size = 16, className }) => (
   <svg width={size} height={size} viewBox="0 0 24 24" fill="none" stroke="currentColor" strokeWidth="2.3" strokeLinecap="round" strokeLinejoin="round" className={className} style={{ display: 'block' }}>
     <path d="M16 3h5v5" />
     <path d="M4 20L21 3" />

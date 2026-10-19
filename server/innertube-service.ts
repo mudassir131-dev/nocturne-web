@@ -1,14 +1,30 @@
 import { Innertube } from 'youtubei.js';
+import crypto from 'crypto';
 
 let innertubeInstance: Innertube | null = null;
 
 export async function getInnertube(): Promise<Innertube> {
   if (!innertubeInstance) {
     innertubeInstance = await Innertube.create({
-      retrieve_player: true
+      retrieve_player: false
     });
   }
   return innertubeInstance;
+}
+
+const SAAVN_DES_KEY = Buffer.from('383465913834659138346591', 'utf8');
+
+export function decryptSaavnMediaUrl(encryptedUrl: string): string | null {
+  try {
+    const decipher = crypto.createDecipheriv('des-ede3-ecb', SAAVN_DES_KEY, null);
+    decipher.setAutoPadding(true);
+    let dec = decipher.update(encryptedUrl, 'base64', 'utf8');
+    dec += decipher.final('utf8');
+    return dec.replace('_96.mp4', '_320.mp4').replace('_160.mp4', '_320.mp4');
+  } catch (err: any) {
+    console.error('Failed to decrypt Saavn media url:', err.message);
+    return null;
+  }
 }
 
 export interface NormalizedTrack {
@@ -146,13 +162,79 @@ export async function searchTracks(query: string, deep: boolean = false): Promis
     return result.tracks;
   }
 
-  try {
-    const yt = await getInnertube();
-    const tracks: NormalizedTrack[] = [];
-    const seenIds = new Set<string>();
+  const tracks: NormalizedTrack[] = [];
+  const seenIds = new Set<string>();
 
-    // 1. Primary: YouTube Music official songs search
+  // 1. Primary: High-speed, unblocked JioSaavn official search (Indian & International, 320kbps CDNs)
+  try {
+    const saavnUrl = `https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&cc=in&p=1&n=20&q=${encodeURIComponent(query)}`;
+    const res = await fetch(saavnUrl, {
+      signal: AbortSignal.timeout(4500),
+      headers: {
+        'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+        'Accept': 'application/json'
+      }
+    });
+
+    if (res.ok) {
+      const data: any = await res.json();
+      const items: any[] = data.results || [];
+      for (const item of items) {
+        if (!item || !item.id || seenIds.has(item.id)) continue;
+        seenIds.add(item.id);
+
+        const durationSec = parseInt(item.duration, 10) || 210;
+        const cleanTitle = cleanYouTubeMusicTitle(
+          (item.song || 'Unknown Title')
+            .replace(/&quot;/g, '"')
+            .replace(/&#039;/g, "'")
+            .replace(/&amp;/g, '&')
+        );
+
+        let artistNames: string[] = [];
+        if (item.primary_artists) {
+          artistNames = item.primary_artists.split(',').map((a: string) => a.trim()).filter(Boolean);
+        } else if (item.singers) {
+          artistNames = item.singers.split(',').map((a: string) => a.trim()).filter(Boolean);
+        }
+        if (artistNames.length === 0) artistNames = ['Various Artists'];
+
+        const rawThumb = (item.image || '').replace('150x150', '500x500');
+
+        // Pre-cache decrypted 320kbps audio stream URL for instantaneous playback
+        if (item.encrypted_media_url) {
+          const directMedia = decryptSaavnMediaUrl(item.encrypted_media_url);
+          if (directMedia) {
+            streamUrlCache.set(item.id, { url: directMedia, expiresAt: Date.now() + 24 * 3600 * 1000 });
+            streamUrlCache.set(`${cleanTitle.toLowerCase()}-${artistNames[0]?.toLowerCase()}`, {
+              url: directMedia,
+              expiresAt: Date.now() + 24 * 3600 * 1000
+            });
+          }
+        }
+
+        tracks.push({
+          id: item.id,
+          title: cleanTitle,
+          artists: artistNames,
+          album: (item.album || 'Single').replace(/&quot;/g, '"').replace(/&#039;/g, "'").replace(/&amp;/g, '&'),
+          artworkUrl: rawThumb || 'https://images.unsplash.com/photo-1514525253161-7a46d19cd819?w=600&auto=format&fit=crop&q=80',
+          duration: durationSec,
+          durationFormatted: formatSecondsToTime(durationSec),
+          source: 'innertube',
+          streamAvailability: true,
+          explicit: item.explicit_content === '1'
+        });
+      }
+    }
+  } catch (err: any) {
+    console.warn('Saavn search error:', err.message);
+  }
+
+  // 2. Secondary fallback: YouTube Innertube if fewer than 5 tracks found
+  if (tracks.length < 5) {
     try {
+      const yt = await getInnertube();
       const musicRes: any = await yt.music.search(query, { type: 'song' });
       const songItems: any[] = musicRes.songs?.contents || musicRes.contents || [];
 
@@ -161,51 +243,11 @@ export async function searchTracks(query: string, deep: boolean = false): Promis
         if (parsed) tracks.push(parsed);
       }
     } catch (e: any) {
-      console.warn('YouTube Music song search fallback:', e.message);
+      console.warn('YouTube Music fallback search failed:', e.message);
     }
-
-    // 2. Secondary fallback if YouTube Music returned fewer than 6 tracks
-    if (tracks.length < 6) {
-      try {
-        const vidRes = await yt.search(`${query} audio`, { type: 'video' });
-        if (vidRes.videos) {
-          for (const item of vidRes.videos.slice(0, 15)) {
-            const v: any = item;
-            if (!v || !v.id || seenIds.has(v.id)) continue;
-
-            const durationSec = parseDurationToSeconds(v.duration?.text || '3:30');
-            if (durationSec > 900 || durationSec < 30) continue;
-
-            seenIds.add(v.id);
-            const cleanTitle = cleanYouTubeMusicTitle(v.title?.text || 'Unknown Title');
-            const thumb = v.thumbnails?.[v.thumbnails.length - 1]?.url ||
-                          v.thumbnails?.[0]?.url ||
-                          `https://i.ytimg.com/vi/${v.id}/hqdefault.jpg`;
-
-            tracks.push({
-              id: v.id,
-              title: cleanTitle,
-              artists: [v.author?.name || 'Various Artists'],
-              album: 'Single',
-              artworkUrl: upgradeArtworkUrl(thumb),
-              duration: durationSec,
-              durationFormatted: v.duration?.text || formatSecondsToTime(durationSec),
-              source: 'innertube',
-              streamAvailability: true,
-              explicit: false
-            });
-          }
-        }
-      } catch (err: any) {
-        console.error('Video fallback search error:', err.message);
-      }
-    }
-
-    return tracks;
-  } catch (err: any) {
-    console.error('Search error in InnerTube:', err);
-    return [];
   }
+
+  return tracks;
 }
 
 export async function searchTracksDeep(query: string, options?: { maxKeywords?: number }): Promise<{
@@ -372,28 +414,23 @@ export async function searchCatalog(query: string, type: string = 'all', deep: b
     return { tracks: [], albums: [], playlists: [], artists, relatedKeywords: [] };
   }
 
-  // Type === 'all': fetch standard catalog plus YouTube algorithm suggestions
-  const [tracksRes, albums, playlists, artists, rawSuggestions] = await Promise.all([
+  // Type === 'all': fetch standard catalog plus suggestions with fast timeout
+  const cleanQuery = query.trim().toLowerCase();
+  const [tracksRes, rawSuggestions] = await Promise.all([
     searchTracks(query).catch(() => []),
-    searchAlbums(query).catch(() => []),
-    searchPlaylists(query).catch(() => []),
-    searchArtists(query).catch(() => []),
-    (async () => {
-      try {
-        const yt = await getInnertube();
-        return await yt.getSearchSuggestions(query);
-      } catch {
-        return [];
-      }
-    })()
+    fetch(`https://suggestqueries.google.com/complete/search?client=firefox&ds=yt&q=${encodeURIComponent(query)}`, {
+      signal: AbortSignal.timeout(2000)
+    })
+      .then(r => r.json())
+      .then((d: any) => (Array.isArray(d?.[1]) ? d[1] : []))
+      .catch(() => [])
   ]);
 
-  const cleanQuery = query.trim().toLowerCase();
   const relatedKeywords = (rawSuggestions as string[])
     .filter(s => s && s.toLowerCase().trim() !== cleanQuery)
     .slice(0, 10);
 
-  return { tracks: tracksRes, albums, playlists, artists, relatedKeywords };
+  return { tracks: tracksRes, albums: [], playlists: [], artists: [], relatedKeywords };
 }
 
 // In-memory cache for resolved stream URLs
@@ -413,95 +450,61 @@ export async function getStreamUrl(
     }
   }
 
-  const yt = await getInnertube();
-
-  const resolveFromVideoId = async (id: string): Promise<string | null> => {
+  // 1. Primary: Resolve pristine 320kbps MP4 audio from JioSaavn CDN (Instant, unblocked on Vercel, no IP-lock)
+  const searchQuery = [titleHint, artistHint].filter(Boolean).join(' ') || videoId;
+  if (searchQuery.trim()) {
     try {
-      // 1. Try VISIONOS client (Unthrottled, direct audio format URL, supports full continuous playback)
-      let res = await yt.actions.execute('/player', {
-        videoId: id,
-        client: 'VISIONOS'
+      const saavnSearchUrl = `https://www.jiosaavn.com/api.php?__call=search.getResults&_format=json&_marker=0&cc=in&p=1&n=5&q=${encodeURIComponent(searchQuery)}`;
+      const res = await fetch(saavnSearchUrl, {
+        signal: AbortSignal.timeout(3500),
+        headers: {
+          'User-Agent': 'Mozilla/5.0 (Windows NT 10.0; Win64; x64) AppleWebKit/537.36 (KHTML, like Gecko) Chrome/122.0.0.0 Safari/537.36',
+          'Accept': 'application/json'
+        }
       });
-
-      let audioFormats = res.data?.streamingData?.adaptiveFormats?.filter(
-        (f: any) => f.mimeType?.startsWith('audio/') && f.url
-      );
-
-      // 2. Fallback to ANDROID_VR if needed
-      if (!audioFormats || audioFormats.length === 0) {
-        res = await yt.actions.execute('/player', {
-          videoId: id,
-          client: 'ANDROID_VR'
-        });
-        audioFormats = res.data?.streamingData?.adaptiveFormats?.filter(
-          (f: any) => f.mimeType?.startsWith('audio/') && f.url
-        );
-      }
-
-      // 3. Fallback to IOS if needed
-      if (!audioFormats || audioFormats.length === 0) {
-        res = await yt.actions.execute('/player', {
-          videoId: id,
-          client: 'IOS'
-        });
-        audioFormats = res.data?.streamingData?.adaptiveFormats?.filter(
-          (f: any) => f.mimeType?.startsWith('audio/') && f.url
-        );
-      }
-
-      if (audioFormats && audioFormats.length > 0) {
-        audioFormats.sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0));
-        return audioFormats[0].url;
-      }
-    } catch (e: any) {
-      console.warn(`Direct player resolution failed for ${id}:`, e.message);
-    }
-    return null;
-  };
-
-  // Step 1: If videoId looks like a valid 11-char YouTube ID, try direct
-  const isLikelyYoutubeId = /^[a-zA-Z0-9_-]{11}$/.test(videoId);
-  if (isLikelyYoutubeId) {
-    const directUrl = await resolveFromVideoId(videoId);
-    if (directUrl) {
-      streamUrlCache.set(cacheKey, { url: directUrl, expiresAt: Date.now() + 3 * 3600 * 1000 });
-      return directUrl;
-    }
-  }
-
-  // Step 2: Search fallback using title and artist
-  let searchQuery = '';
-  if (titleHint && artistHint) {
-    searchQuery = `${titleHint} ${artistHint}`;
-  } else if (titleHint) {
-    searchQuery = titleHint;
-  } else if (artistHint) {
-    searchQuery = artistHint;
-  } else if (!isLikelyYoutubeId && videoId) {
-    searchQuery = videoId.replace(/[-_]/g, ' ');
-  }
-
-  if (searchQuery) {
-    try {
-      console.log(`Searching YouTube fallback for stream: "${searchQuery}"`);
-      const searchRes = await yt.search(`${searchQuery} audio`, { type: 'video' });
-      const foundVideo: any = searchRes.videos?.[0];
-
-      if (foundVideo && foundVideo.id) {
-        const searchStreamUrl = await resolveFromVideoId(foundVideo.id);
-        if (searchStreamUrl) {
-          const entry = {
-            url: searchStreamUrl,
-            expiresAt: Date.now() + 4 * 3600 * 1000
-          };
-          streamUrlCache.set(cacheKey, entry);
-          if (videoId) streamUrlCache.set(videoId, entry);
-          if (foundVideo.id) streamUrlCache.set(foundVideo.id, entry);
-          return searchStreamUrl;
+      if (res.ok) {
+        const data: any = await res.json();
+        const songs: any[] = data.results || [];
+        for (const s of songs) {
+          if (s.encrypted_media_url) {
+            const dec = decryptSaavnMediaUrl(s.encrypted_media_url);
+            if (dec) {
+              const entry = { url: dec, expiresAt: Date.now() + 24 * 3600 * 1000 };
+              streamUrlCache.set(cacheKey, entry);
+              if (videoId) streamUrlCache.set(videoId, entry);
+              return dec;
+            }
+          }
         }
       }
-    } catch (searchErr: any) {
-      console.error('Search fallback error:', searchErr);
+    } catch (err: any) {
+      console.warn('Saavn stream resolution error:', err.message);
+    }
+  }
+
+  // 2. Secondary: If videoId is a valid YouTube ID, try YouTube Innertube VisionOS / Android VR
+  const isLikelyYoutubeId = /^[a-zA-Z0-9_-]{11}$/.test(videoId);
+  if (isLikelyYoutubeId) {
+    try {
+      const yt = await getInnertube();
+      for (const client of ['VISIONOS', 'ANDROID_VR', 'IOS']) {
+        try {
+          const res = await yt.actions.execute('/player', { videoId, client });
+          const audioFormats = res.data?.streamingData?.adaptiveFormats?.filter(
+            (f: any) => f.mimeType?.startsWith('audio/') && f.url
+          );
+          if (audioFormats && audioFormats.length > 0) {
+            audioFormats.sort((a: any, b: any) => (b.bitrate || 0) - (a.bitrate || 0));
+            const url = audioFormats[0].url;
+            streamUrlCache.set(cacheKey, { url, expiresAt: Date.now() + 3 * 3600 * 1000 });
+            return url;
+          }
+        } catch {
+          // try next client
+        }
+      }
+    } catch (e: any) {
+      console.warn(`Direct YouTube resolution failed for ${videoId}:`, e.message);
     }
   }
 
